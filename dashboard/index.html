@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Narrative Monitor — AI &amp; Employment</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Top Bar -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <span class="logo">◉</span>
+            <h1>Narrative Monitor</h1>
+            <span class="topic-badge">AI &amp; Job Displacement</span>
+        </div>
+        <div class="topbar-right">
+            <span class="status-dot live"></span>
+            <span class="status-text">Monitoring Active</span>
+            <span class="last-updated" id="lastUpdated"></span>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+        <button class="tab active" data-tab="overview">Overview</button>
+        <button class="tab" data-tab="collect">+ Collect</button>
+        <button class="tab" data-tab="signals">Signal Collection</button>
+        <button class="tab" data-tab="narratives">Narratives</button>
+        <button class="tab" data-tab="analysis">Analysis</button>
+        <button class="tab" data-tab="risk">Risk Assessment</button>
+        <button class="tab" data-tab="brief">Executive Brief</button>
+    </nav>
+
+    <main class="content">
+
+        <!-- ========== OVERVIEW TAB ========== -->
+        <section class="tab-panel active" id="panel-overview">
+            <!-- KPI Row -->
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-label">Signals Tracked</div>
+                    <div class="kpi-value" id="kpiSignals">0</div>
+                    <div class="kpi-delta positive">+12 last 24h</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Active Narratives</div>
+                    <div class="kpi-value" id="kpiNarratives">0</div>
+                    <div class="kpi-delta neutral">Auto-detected</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Overall Sentiment</div>
+                    <div class="kpi-value sentiment-negative" id="kpiSentiment">−23%</div>
+                    <div class="kpi-delta negative">↓ 5pt from last week</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Risk Level</div>
+                    <div class="kpi-value risk-medium" id="kpiRisk">MEDIUM</div>
+                    <div class="kpi-delta negative">↑ Elevated</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="charts-row">
+                <div class="chart-card wide">
+                    <h3>Signal Volume Over Time</h3>
+                    <canvas id="chartVolume"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Sentiment Distribution</h3>
+                    <canvas id="chartSentiment"></canvas>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-card">
+                    <h3>Platform Breakdown</h3>
+                    <canvas id="chartPlatform"></canvas>
+                </div>
+                <div class="chart-card wide">
+                    <h3>Narrative Velocity (7-Day Trend)</h3>
+                    <canvas id="chartVelocity"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Alerts -->
+            <div class="alerts-section">
+                <h3>⚡ Recent Alerts</h3>
+                <div class="alerts-list" id="alertsList"></div>
+            </div>
+        </section>
+
+        <!-- ========== COLLECT / DATA ENTRY TAB ========== -->
+        <section class="tab-panel" id="panel-collect">
+            <div class="panel-header">
+                <h2>Collect Signals</h2>
+                <p class="panel-subtitle">Add signals manually, or import/export your dataset as JSON</p>
+                <div class="collect-actions">
+                    <button class="btn btn-primary" id="btnShowForm">+ Add Signal</button>
+                    <button class="btn btn-secondary" id="btnImportJSON">Import JSON</button>
+                    <button class="btn btn-secondary" id="btnExportJSON">Export JSON</button>
+                    <button class="btn btn-danger" id="btnClearData">Clear All Data</button>
+                    <input type="file" id="fileImport" accept=".json" hidden>
+                </div>
+            </div>
+
+            <!-- Add Signal Form -->
+            <div class="entry-form" id="entryForm" style="display:none;">
+                <h3>New Signal</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="entryPlatform">Platform</label>
+                        <select id="entryPlatform" required>
+                            <option value="reddit">Reddit</option>
+                            <option value="twitter">X (Twitter)</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="youtube">YouTube</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="entrySource">Source</label>
+                        <input type="text" id="entrySource" placeholder="e.g. r/technology, @username, channel name">
+                    </div>
+                    <div class="form-group">
+                        <label for="entrySentiment">Sentiment</label>
+                        <select id="entrySentiment">
+                            <option value="negative">Negative</option>
+                            <option value="positive">Positive</option>
+                            <option value="mixed">Mixed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="entryTone">Tone</label>
+                        <select id="entryTone">
+                            <option value="fear">Fear</option>
+                            <option value="excitement">Excitement</option>
+                            <option value="skepticism">Skepticism</option>
+                            <option value="sarcasm">Sarcasm</option>
+                            <option value="resignation">Resignation</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="entryLikes">Likes</label>
+                        <input type="number" id="entryLikes" placeholder="0" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="entryComments">Comments</label>
+                        <input type="number" id="entryComments" placeholder="0" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="entryViews">Views</label>
+                        <input type="number" id="entryViews" placeholder="(optional)" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="entryDate">Post Date</label>
+                        <input type="date" id="entryDate">
+                    </div>
+                </div>
+                <div class="form-group form-full">
+                    <label for="entryMessage">Message / Core Content</label>
+                    <textarea id="entryMessage" rows="3" placeholder="Paste or type the core message of the post..."></textarea>
+                </div>
+                <div class="form-buttons">
+                    <button class="btn btn-primary" id="btnSaveSignal">Save Signal</button>
+                    <button class="btn btn-secondary" id="btnCancelForm">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Data stats -->
+            <div class="collect-stats" id="collectStats"></div>
+
+            <!-- Recent entries -->
+            <div class="collect-recent">
+                <h3>All Signals (<span id="collectCount">0</span>)</h3>
+                <div class="collect-table-wrap">
+                    <table class="collect-table" id="collectTable">
+                        <thead>
+                            <tr>
+                                <th>Platform</th>
+                                <th>Source</th>
+                                <th>Message</th>
+                                <th>Sentiment</th>
+                                <th>Tone</th>
+                                <th>Engagement</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="collectBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SIGNAL COLLECTION TAB ========== -->
+        <section class="tab-panel" id="panel-signals">
+            <div class="panel-header">
+                <h2>Signal Collection</h2>
+                <div class="filter-row">
+                    <select id="filterPlatform">
+                        <option value="all">All Platforms</option>
+                        <option value="reddit">Reddit</option>
+                        <option value="twitter">X (Twitter)</option>
+                        <option value="tiktok">TikTok</option>
+                        <option value="youtube">YouTube</option>
+                    </select>
+                    <select id="filterSentiment">
+                        <option value="all">All Sentiments</option>
+                        <option value="positive">Positive</option>
+                        <option value="negative">Negative</option>
+                        <option value="mixed">Mixed</option>
+                    </select>
+                    <select id="filterTone">
+                        <option value="all">All Tones</option>
+                        <option value="fear">Fear</option>
+                        <option value="excitement">Excitement</option>
+                        <option value="skepticism">Skepticism</option>
+                        <option value="sarcasm">Sarcasm</option>
+                        <option value="resignation">Resignation</option>
+                    </select>
+                </div>
+            </div>
+            <div class="signals-grid" id="signalsGrid"></div>
+        </section>
+
+        <!-- ========== NARRATIVES TAB ========== -->
+        <section class="tab-panel" id="panel-narratives">
+            <div class="panel-header">
+                <h2>Narrative Identification</h2>
+                <p class="panel-subtitle">Narrative clusters auto-detected by analyzing signal content, sentiment, and tone</p>
+            </div>
+            <div class="narratives-grid" id="narrativesGrid"></div>
+        </section>
+
+        <!-- ========== ANALYSIS TAB ========== -->
+        <section class="tab-panel" id="panel-analysis">
+            <div class="panel-header">
+                <h2>Narrative Analysis</h2>
+            </div>
+
+            <div class="analysis-grid">
+                <!-- Velocity -->
+                <div class="analysis-card">
+                    <h3>📈 Narrative Velocity</h3>
+                    <div class="analysis-content" id="analysisVelocity"></div>
+                </div>
+
+                <!-- Amplification -->
+                <div class="analysis-card">
+                    <h3>📡 Amplification Patterns</h3>
+                    <div class="analysis-content" id="analysisAmplification"></div>
+                </div>
+
+                <!-- Signal vs Noise -->
+                <div class="analysis-card">
+                    <h3>🎯 Signal vs Noise</h3>
+                    <div class="analysis-content" id="analysisSignalNoise"></div>
+                </div>
+
+                <!-- Organic vs Coordinated -->
+                <div class="analysis-card">
+                    <h3>🔍 Organic vs Coordinated</h3>
+                    <div class="analysis-content" id="analysisOrganic"></div>
+                </div>
+            </div>
+
+            <!-- Cross-Platform Flow -->
+            <div class="flow-section">
+                <h3>Cross-Platform Narrative Flow</h3>
+                <div class="flow-diagram" id="flowDiagram"></div>
+            </div>
+        </section>
+
+        <!-- ========== RISK ASSESSMENT TAB ========== -->
+        <section class="tab-panel" id="panel-risk">
+            <div class="panel-header">
+                <h2>Risk Assessment</h2>
+                <p class="panel-subtitle">Evaluated risk potential for each identified narrative</p>
+            </div>
+            <div class="risk-grid" id="riskGrid"></div>
+
+            <!-- Risk Matrix -->
+            <div class="risk-matrix-section">
+                <h3>Risk Matrix</h3>
+                <div class="risk-matrix" id="riskMatrix"></div>
+            </div>
+        </section>
+
+        <!-- ========== EXECUTIVE BRIEF TAB ========== -->
+        <section class="tab-panel" id="panel-brief">
+            <div class="panel-header">
+                <h2>Executive Brief</h2>
+                <div class="brief-actions">
+                    <button class="btn btn-primary" id="btnGenerateBrief">Generate Brief</button>
+                    <button class="btn btn-secondary" id="btnExportBrief">Export as PDF</button>
+                </div>
+            </div>
+            <div class="brief-container" id="briefContainer">
+                <div class="brief-placeholder">
+                    Click <strong>Generate Brief</strong> to compile the narrative analysis report.
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <span>Social Media Narrative Monitor · Internal Use Only</span>
+        <span>Topic: AI &amp; Job Displacement · Updated <span id="footerTime"></span></span>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
